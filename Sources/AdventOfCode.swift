@@ -6,19 +6,20 @@ let allChallenges: [any AdventDay] = [
   Day01(),
   Day02(),
   Day03(),
+  Day18(),
 ]
 
 @main
 struct AdventOfCode: AsyncParsableCommand {
   @Argument(help: "The day of the challenge. For December 1st, use '1'.")
   var day: Int?
-
+  
   @Flag(help: "Benchmark the time taken by the solution")
   var benchmark: Bool = false
-
+  
   @Flag(help: "Run all the days available")
   var all: Bool = false
-
+  
   /// The selected day, or the latest day if no selection is provided.
   var selectedChallenge: any AdventDay {
     get throws {
@@ -33,12 +34,12 @@ struct AdventOfCode: AsyncParsableCommand {
       }
     }
   }
-
+  
   /// The latest challenge in `allChallenges`.
   var latestChallenge: any AdventDay {
     allChallenges.max(by: { $0.day < $1.day })!
   }
-
+  
   func run<T>(part: () async throws -> T, named: String) async -> Duration {
     var result: Result<T, Error>?
     let timing = await ContinuousClock().measure {
@@ -58,35 +59,35 @@ struct AdventOfCode: AsyncParsableCommand {
     }
     return timing
   }
-
+  
   func run() async throws {
     let challenges =
-      if all {
-        allChallenges
-      } else {
-        try [selectedChallenge]
-      }
-
+    if all {
+      allChallenges
+    } else {
+      try [selectedChallenge]
+    }
+    
     for challenge in challenges {
       print("Executing Advent of Code challenge \(challenge.day)...")
-
+      
       let timing1 = await run(part: challenge.part1, named: "Part 1")
       let timing2 = await run(part: challenge.part2, named: "Part 2")
-
+      
       if benchmark {
         let timing1Ms =
-          Double(timing1.components.seconds) * 1000 + Double(timing1.components.attoseconds)
-          / 1_000_000_000_000_000
+        Double(timing1.components.seconds) * 1000 + Double(timing1.components.attoseconds)
+        / 1_000_000_000_000_000
         let timing2Ms =
-          Double(timing2.components.seconds) * 1000 + Double(timing2.components.attoseconds)
-          / 1_000_000_000_000_000
-
+        Double(timing2.components.seconds) * 1000 + Double(timing2.components.attoseconds)
+        / 1_000_000_000_000_000
+        
         print(
           "Part 1 took \(String(format: "%.2f", timing1Ms))ms, part 2 took \(String(format: "%.2f", timing2Ms))ms."
         )
-        #if DEBUG
-          print("Looks like you're benchmarking debug code. Try swift run -c release")
-        #endif
+#if DEBUG
+        print("Looks like you're benchmarking debug code. Try swift run -c release")
+#endif
       }
     }
   }
